@@ -1,9 +1,9 @@
 import uuid, boto3
 s3 = boto3.client("s3")
-bucket = f"devops-demo-{uuid.uuid4().hex[:8]}"
+bucket = f"bootcamp-bootcamp.tester-{uuid.uuid4().hex[:8]}"
 s3.create_bucket(
     Bucket=bucket,
-    CreateBucketConfiguration={"LocationConstraint": "us-east-2"}
+    CreateBucketConfiguration={"LocationConstraint": "us-east-1"}
 )
 print("Bucket:", bucket)
 

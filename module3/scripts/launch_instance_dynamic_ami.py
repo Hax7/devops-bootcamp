@@ -26,9 +26,11 @@ def resolve_latest_ami_id(region_name: str | None = None) -> str:
       param = ssm.get_parameter(Name=name)
       ami_id = param["Parameter"]["Value"].strip()
       if ami_id:
+        print(ami_id)
         return ami_id
-    except ClientError:
+    except ClientError as e:
       # Continue to next option or fallback
+      print(f"SSM parameter {name} not found: {e}")
       pass
 
   # Fallback: query EC2 images owned by Amazon and pick the newest
@@ -37,7 +39,7 @@ def resolve_latest_ami_id(region_name: str | None = None) -> str:
       Owners=["amazon"],
       Filters=[
         {"Name": "name", "Values": [
-          "al2023-ami-*-x86_64",
+          "al2023-ami-minimal-2023.*-x86_64",
           "amzn2-ami-hvm-*-x86_64-gp2",
         ]},
         {"Name": "architecture", "Values": ["x86_64"]},
@@ -72,7 +74,7 @@ def main():
     TagSpecifications=[
       {
         "ResourceType": "instance",
-        "Tags": [{"Key": "Name", "Value": "demo-ec2"}],
+        "Tags": [{"Key": "Name", "Value": "ahmad-ec2"}],
       }
     ],
   )

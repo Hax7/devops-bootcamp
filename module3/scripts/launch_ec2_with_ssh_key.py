@@ -1,5 +1,6 @@
 import sys
 from typing import Optional
+import os
 
 import boto3
 from botocore.exceptions import ClientError
@@ -92,7 +93,7 @@ def ensure_web_sg(ec2, vpc_id: str, group_name: str = "web-http-https-sg") -> st
             raise
 
     # Ensure HTTP (80) and HTTPS (443) rules exist (idempotent)
-    for from_to in [(80, 80), (443, 443)]:
+    for from_to in [(22, 22),(80, 80), (443, 443)]:
         try:
             ec2.authorize_security_group_ingress(
                 GroupId=sg_id,
@@ -122,9 +123,9 @@ def ensure_web_sg(ec2, vpc_id: str, group_name: str = "web-http-https-sg") -> st
     return sg_id
 
 
-def build_user_data_script() -> str:
-    # Cloud-init script to install nginx and certbot
-    script = r"""#cloud-config
+def build_user_data_script(public_ssh_key: str) -> str:
+    # Cloud-init script to install nginx and certbot, and add SSH key
+    script = rf"""#cloud-config
 package_update: true
 package_upgrade: true
 runcmd:
@@ -134,6 +135,12 @@ runcmd:
   - snap install core; snap refresh core
   - snap install --classic certbot
   - ln -sf /snap/bin/certbot /usr/bin/certbot
+  # Add SSH key for user ubuntu
+  - mkdir -p /home/ubuntu/.ssh
+  - echo "{public_ssh_key}" >> /home/ubuntu/.ssh/authorized_keys
+  - chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+  - chmod 600 /home/ubuntu/.ssh/authorized_keys
+  - chmod 700 /home/ubuntu/.ssh
   # Optionally, you can automatically obtain a certificate later via:
   # certbot --nginx -d yourdomain.com -d www.yourdomain.com --non-interactive --agree-tos -m you@example.com
 """
@@ -141,6 +148,15 @@ runcmd:
 
 
 def main():
+    # Read public SSH key from default path
+    key_path = os.path.expanduser("~/.ssh/id_rsa.pub")
+    try:
+        with open(key_path, 'r') as f:
+            PUBLIC_SSH_KEY = f.read().strip()
+    except FileNotFoundError:
+        print(f"Public SSH key not found at {key_path}. Please ensure your SSH key exists.")
+        sys.exit(1)
+
     session = boto3.session.Session()
     region = session.region_name or "us-east-1"
     ec2 = session.client("ec2", region_name=region)
@@ -155,7 +171,7 @@ def main():
     # AMI and instance config
     image_id = resolve_latest_ubuntu_ami(region)
     instance_type = "t3.micro"  # current-gen burstable (Free Tier eligible in some regions)
-    user_data = build_user_data_script()
+    user_data = build_user_data_script(PUBLIC_SSH_KEY)
 
     print(f"Launching EC2 with AMI {image_id} and type {instance_type}...")
 
@@ -177,7 +193,7 @@ def main():
                 {
                     "ResourceType": "instance",
                     "Tags": [
-                        {"Key": "Name", "Value": "web-nginx-certbot"},
+                        {"Key": "Name", "Value": "web-nginx-certbot-ssh"},
                     ],
                 }
             ],
@@ -187,35 +203,35 @@ def main():
         print(f"Failed to launch instance: {e}")
         sys.exit(1)
 
-    instance_id = run_resp["Instances"][0]["InstanceId"]
-    print("Launched:", instance_id)
+    instance_ids = [inst["InstanceId"] for inst in run_resp["Instances"]]
+    print(f"Launched instances: {instance_ids}")
 
     # Wait for running state
     waiter = ec2.get_waiter("instance_running")
-    print("Waiting for instance to be running...")
-    waiter.wait(InstanceIds=[instance_id])
+    print("Waiting for instances to be running...")
+    waiter.wait(InstanceIds=instance_ids)
 
-    # Fetch public IP
-    desc = ec2.describe_instances(InstanceIds=[instance_id])
-    inst = desc["Reservations"][0]["Instances"][0]
-    public_ip = inst.get("PublicIpAddress")
-
-    if not public_ip:
-        # In rare cases public IP may not be immediately populated; quick retry
-        import time
-
-        for _ in range(6):
-            time.sleep(5)
-            desc = ec2.describe_instances(InstanceIds=[instance_id])
-            inst = desc["Reservations"][0]["Instances"][0]
+    # Fetch public IPs
+    desc = ec2.describe_instances(InstanceIds=instance_ids)
+    public_ips = []
+    for reservation in desc["Reservations"]:
+        for inst in reservation["Instances"]:
             public_ip = inst.get("PublicIpAddress")
             if public_ip:
-                break
+                public_ips.append(public_ip)
 
-    if public_ip:
-        print(f"Public IP: {public_ip}")
+    if public_ips:
+        print(f"Public IPs: {public_ips}")
+        # Save to file for later use
+        with open("instance_ips.txt", "w") as f:
+            for ip in public_ips:
+                f.write(f"{ip}\n")
+        print("IPs saved to instance_ips.txt")
+        print("You can SSH into the instances with:")
+        for ip in public_ips:
+            print(f"ssh ubuntu@{ip}")
     else:
-        print("Instance is running but PublicIpAddress not found. Check subnet settings.")
+        print("Instances are running but PublicIpAddresses not found. Check subnet settings.")
 
 
 if __name__ == "__main__":

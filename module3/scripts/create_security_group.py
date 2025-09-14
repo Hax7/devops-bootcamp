@@ -16,6 +16,7 @@ try:
     )
     sg_id = sg["GroupId"]
     print("Created SG:", sg_id)
+    print(default_vpc)
 except ClientError as e:
     code = e.response.get("Error", {}).get("Code")
     if code in {"InvalidGroup.Duplicate", "Resource.AlreadyExists"}:
@@ -64,4 +65,4 @@ except ClientError as e:
 desc = ec2.describe_security_groups(GroupIds=[sg_id])
 print("Current rules:", desc["SecurityGroups"][0]["IpPermissions"])
 
-ec2.delete_security_group(GroupId=sg_id)
+# ec2.delete_security_group(GroupId=sg_id)

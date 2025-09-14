@@ -1,429 +1,50 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Module 3 Part 3 - Automating Workflows with Python</title>
-<style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; background:#f4f6f9; color:#333; }
-        h1, h2, h3, h4 { margin-bottom:15px; }
-        h1 { font-size:2.2em; }
-        h2 { font-size:1.7em; }
-        h3 { font-size:1.3em; }
-        .slideshow-container { max-width:1200px; margin:0 auto; padding:40px 60px; }
-        .slide { display:none; padding:40px 20px; }
-        .slide.active { display:block; }
-        .grid.two { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin:25px 0; }
-        .card { padding:20px; border-radius:12px; margin:10px 0; transition:transform 0.3s; }
-        .card.alt1 { background:linear-gradient(135deg,#17a2b8,#138496); }
-        .card.alt2 { background:linear-gradient(135deg,#e67e22,#d35400); }
-        .card.alt3 { background:linear-gradient(135deg,#28a745,#218838); }
-        .card.alt4 { background:linear-gradient(135deg,#6f42c1,#59359c); }
-        .card.alt5 { background:linear-gradient(135deg,#dc3545,#c82333); }
-        .card:hover { transform:translateY(-4px); }
-        .interactive-element { background:linear-gradient(135deg,#9b59b6,#8e44ad); color:#fff; padding:18px 20px; border-radius:15px; margin:26px auto 10px; cursor:pointer; font-weight:600; max-width:940px; text-align:left; }
-        .quiz-question { background:linear-gradient(135deg,#1abc9c,#16a085); color:#fff; padding:24px; border-radius:15px; margin:26px 0; text-align:left; }
-        .quiz-options { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin:16px 0 8px; }
-        .quiz-option { background:rgba(255,255,255,0.92); color:#333; padding:10px 12px; border-radius:10px; cursor:pointer; border:2px solid transparent; font-weight:500; font-size:.9em; }
-        .quiz-option:hover { border-color:#3498db; }
-        .instructor-note { background:rgba(52,152,219,0.12); border-left:4px solid #3498db; padding:12px 16px; margin:18px auto 0; font-style:italic; text-align:left; display:none; max-width:920px; font-size:.85em; }
-        .code-block { font-family:'Courier New', monospace; background:#1e2933; color:#f8f8f2; padding:14px 16px; border-radius:10px; text-align:left; font-size:.85em; line-height:1.45; overflow-x:auto; margin:12px 0; white-space:pre; }
-        .mini { font-size:.78em; opacity:.9; }
-        .emph { background:#f1c40f; color:#2c3e50; padding:2px 6px; border-radius:6px; font-weight:600; }
-        .navigation { position:fixed; bottom:26px; left:50%; transform:translateX(-50%); display:flex; gap:12px; }
-        .nav-btn { background:linear-gradient(135deg,#e74c3c,#c0392b); color:#fff; border:none; padding:13px 24px; border-radius:26px; cursor:pointer; font-size:15px; font-weight:600; }
-        .nav-btn:hover { transform:translateY(-3px); box-shadow:0 10px 22px rgba(0,0,0,0.25); }
-        .slide-counter { position:fixed; top:24px; right:26px; background:rgba(0,0,0,0.7); color:#fff; padding:8px 18px; border-radius:20px; font-size:.9em; }
-        table { border-collapse:collapse; width:100%; margin:18px 0; font-size:.9em; }
-        th,td { border:1px solid #dde3ec; padding:8px 10px; text-align:left; }
-        th { background:#2c3e50; color:#fff; }
-        .aws-orange { background:linear-gradient(135deg,#ff9900,#ec7211); }
-        .highlight { background:linear-gradient(135deg,#f1c40f,#f39c12); color:#2c3e50; padding:3px 8px; border-radius:5px; font-weight:600; }
-        .vm-diagram { background:#f8f9fa; padding:20px; border-radius:12px; margin:20px 0; }
-        .progress-bar { background:rgba(255,255,255,0.2); height:20px; border-radius:10px; margin:15px 0; overflow:hidden; }
-        .progress-fill { height:100%; background:linear-gradient(135deg,#28a745,#20c997); border-radius:10px; }
-        @media (max-width:840px){ h1{font-size:1.9em;} h2{font-size:1.55em;} .slide{padding:34px 26px 40px;} }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Top Python Libraries for Automation & DevOps — What · Why · How</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/monokai.min.css">
 </head>
 <body>
-<div class="slideshow-container">
-<!-- Slide 1: Welcome & Progress -->
-<div class="slide active">
-  <h1>🚀 Module 3 Part 3: Automating Workflows with Python</h1>
-  <h2>requests, fabric &amp; watchdog in action</h2>
-  <div style="background:linear-gradient(135deg,#667eea,#764ba2); color:white; padding:25px; border-radius:15px; margin:25px 0;">
-    <h3 style="text-align:center;">Module 3 Progress: 6 Hours Complete → 9 Hours After Today</h3>
-    <div class="progress-bar">
-      <div class="progress-fill" style="width:75%;"></div>
-    </div>
-    <p style="text-align:center; margin-top:10px;">Great job! 75% of Module 3 will be done after this session</p>
-  </div>
-  <div class="grid two">
-    <div class="card alt3">
-      <h3>✅ What You've Mastered</h3>
-      <ul style="color:#fff; margin-top:10px;">
-        <li>Python scripting fundamentals</li>
-        <li>Basic AWS automation with Boto3</li>
-        <li>File I/O and JSON handling</li>
-        <li>Using Python for system tasks</li>
-      </ul>
-    </div>
-    <div class="card alt4">
-      <h3>🎯 Today's Adventure</h3>
-      <ul style="color:#fff; margin-top:10px;">
-        <li>Why Python is key for DevOps</li>
-        <li>Reliable API calls with <code>requests</code></li>
-        <li>Remote server automation via <code>fabric</code></li>
-        <li>File monitoring + S3 backup with <code>watchdog</code></li>
-        <li>Best practices &amp; next steps</li>
-      </ul>
-    </div>
-  </div>
-  <div class="interactive-element">
-    Ready to automate all the things? Let's dive in! 💪
-  </div>
-  <div class="instructor-note">
-    Welcome back! Recap that we've covered Python basics and AWS scripting; now we'll tackle automation in broader contexts. Highlight that today is about practical Python tools to eliminate manual work (no more manual cURL, SSH, or file uploads!). Gauge the room: ask who has experience with these libraries or similar tasks.
-  </div>
-</div>
-<!-- Slide 2: Why Python for DevOps? -->
-<div class="slide">
-  <h2>Why Python for DevOps?</h2>
-  <ul>
-    <li>Easy to learn and use (simple, readable syntax):contentReference[oaicite:0]{index=0}</li>
-    <li>Cross-platform (runs on Linux, Windows, etc.):contentReference[oaicite:1]{index=1}</li>
-    <li>Rich ecosystem of libraries for almost every task (AWS, SSH, containers, and more):contentReference[oaicite:2]{index=2}</li>
-    <li>Huge community &amp; tool support (well-maintained, integrates with CI/CD tools):contentReference[oaicite:3]{index=3}</li>
-  </ul>
-  <div class="instructor-note">
-    Python is popular in DevOps for good reason: it's easy to pick up and very powerful. Mention that while Bash scripts handle simple automation, Python shines for complex tasks due to its extensive libraries (e.g., boto3, requests, fabric):contentReference[oaicite:4]{index=4}. Emphasize community support means plenty of examples and help available.
-  </div>
-</div>
-<!-- Slide 3: Python Automation Scenarios -->
-<div class="slide">
-  <h2>Python Automation Scenarios</h2>
-  <ul>
-    <li>🌐 **Calling APIs &amp; Services:** Use Python to interact with web APIs (e.g. send Slack alerts, fetch cloud data using <code>requests</code>).</li>
-    <li>🔧 **Managing Servers:** Automate remote server tasks over SSH (configure, deploy, restart services with <code>fabric</code> instead of manual SSH).</li>
-    <li>📁 **Watching Files:** Monitor and react to file changes (auto-backup logs to S3 with <code>watchdog</code>, trigger jobs on new files).</li>
-  </ul>
-  <div class="instructor-note">
-    These are common DevOps automation needs: interacting with external APIs (monitoring tools, cloud provider APIs), performing operations on remote machines, and automating file-based workflows (backups, syncing, trigger pipelines on new artifacts). Introduce that we'll cover each with a dedicated Python library.
-  </div>
-</div>
-<!-- Slide 4: Making Smart API Calls with requests -->
-<div class="slide">
-  <h2>🔗 Making Smart API Calls with <code>requests</code></h2>
-  <p>You will often call external HTTP APIs in automation. The <code>requests</code> library makes it easy – let's ensure we do it reliably.</p>
-  <div class="interactive-element">Think 🧐: What could go wrong when calling an external API from a script?</div>
-  <div class="instructor-note">
-    Possible issues: network timeouts, slow responses, non-200 status codes, wrong data format, authentication needed, etc. Get students to consider failure modes (this motivates why we need timeouts, error checks, etc. in code).
-  </div>
-</div>
-<!-- Slide 5: requests Example GET -->
-<div class="slide">
-  <h3>Example: Basic GET Request (JSON API)</h3>
-  <div class="code-block">
-import requests
-
-# GET a sample JSON resource
-response = requests.get("https://jsonplaceholder.typicode.com/todos/1")
-# Check for success
-if response.status_code == 200:
-    data = response.json()  # parse JSON to Python dict
-    print(f"Todo title: {data['title']}")
-else:
-    print(f"Request failed with code: {response.status_code}")
-  </div>
-  <div class="instructor-note">
-    Here we use <code>requests.get</code> to fetch a test API (a placeholder todo item). We then check the HTTP status code (200 means OK) and use <code>.json()</code> to parse the JSON response into a Python dictionary:contentReference[oaicite:5]{index=5}. Note: By default, this call has no timeout – if the server hangs, our script would hang (we'll address that next).
-  </div>
-</div>
-<!-- Slide 6: requests Best Practices -->
-<div class="slide">
-  <h3>Making API Calls Resilient</h3>
-  <ul>
-    <li>Always set a <code>timeout</code> to avoid hanging indefinitely:contentReference[oaicite:6]{index=6} (e.g. <code>requests.get(url, timeout=5)</code>).</li>
-    <li>Use <code>response.raise_for_status()</code> to catch HTTP errors automatically:contentReference[oaicite:7]{index=7}.</li>
-    <li>Leverage <code>response.json()</code> to parse JSON responses into Python data:contentReference[oaicite:8]{index=8}.</li>
-    <li>Add necessary headers (auth tokens, content-type, etc.) as required by the API.</li>
-    <li>Implement retries/backoff for robustness (retry failed requests a few times rather than failing outright).</li>
-  </ul>
-  <div class="instructor-note">
-    **Timeouts:** Emphasize that requests has **no default timeout**, so always specify one:contentReference[oaicite:9]{index=9}.  
-    **Errors:** <code>raise_for_status</code> will throw an exception for 4xx/5xx codes so you can handle it (or let your script log/exit):contentReference[oaicite:10]{index=10}.  
-    **Headers:** Example - include auth tokens (Bearer token) or set <code>Content-Type: application/json</code> for POST.  
-    **Retries:** Note that by default <code>requests</code> won't retry failed calls. You can implement a simple retry loop or use advanced techniques (like urllib3 Retry with a Session):contentReference[oaicite:11]{index=11}:contentReference[oaicite:12]{index=12}.  
-    It's also good to log API calls and responses when automating, for audit/troubleshooting.
-  </div>
-</div>
-<!-- Slide 7: requests Hands-On Challenge -->
-<div class="slide">
-  <h2>💻 Hands-On: Reliable API Request</h2>
-  <ol>
-    <li>Use <code>requests.get</code> to retrieve your public IP from <code>http://httpbin.org/ip</code>.</li>
-    <li>Set a timeout of 5 seconds on the request.</li>
-    <li>Print the IP address if successful (parse the JSON), or print a friendly error message if not.</li>
-  </ol>
-  <div class="interactive-element">Try it now! (Run the code and see if you get your IP or an error)</div>
-  <div class="instructor-note">
-    Give students a few minutes to write a short script. Solution hint: 
-    ```
-    res = requests.get("http://httpbin.org/ip", timeout=5)
-    res.raise_for_status()
-    ip = res.json().get("origin")
-    print(f"My IP is {ip}")
-    ```
-    They should catch exceptions or use if/else on status. :contentReference[oaicite:13]{index=13} shows using raise_for_status in a try/except. After time, review the solution with them.
-  </div>
-</div>
-<!-- Slide 8: Remote Automation with fabric -->
-<div class="slide">
-  <h2>📡 Remote Automation with <code>fabric</code></h2>
-  <p>The <code>fabric</code> library lets us run shell commands on remote servers via SSH, using Python (no manual SSH needed!).</p>
-  <div class="interactive-element">Question: What kinds of tasks would you automate on remote servers? (Think of repetitive admin tasks.)</div>
-  <div class="instructor-note">
-    Discuss ideas: e.g., updating software on multiple servers, restarting a service across dozens of VMs, editing config files remotely, collecting logs, etc. Fabric (built on Paramiko) gives us a Pythonic way to do these over SSH:contentReference[oaicite:14]{index=14}. It’s like writing a script that runs commands on another machine.
-  </div>
-</div>
-<!-- Slide 9: fabric Example -->
-<div class="slide">
-  <h3>Example: Updating a Web Server via SSH</h3>
-  <div class="code-block">
-from fabric import Connection
-
-# Connect to remote server (using SSH key authentication)
-conn = Connection(host="ubuntu@<YOUR-EC2-IP>", connect_kwargs={"key_filename": "mykey.pem"})
-
-# Run commands on the remote server
-conn.run("echo 'Hello from Fabric!' > index.html")
-conn.run("sudo mv index.html /var/www/html/index.nginx-debian.html")
-conn.run("sudo systemctl reload nginx")
-
-print("Update complete.")
-  </div>
-  <div class="instructor-note">
-    We connect to an Ubuntu server (e.g., an EC2 instance) using an SSH key:contentReference[oaicite:15]{index=15}. Then we:  
-    • Create a file with some text (simulating a new webpage)  
-    • Move it into Nginx's web directory with sudo (requires root privileges)  
-    • Reload Nginx to apply the change  
-    After running this, the server's homepage is updated without us logging in manually. Highlight that any shell command can be executed via <code>conn.run</code>. Fabric captures the command output as well (which we could print or log). 
-  </div>
-</div>
-<!-- Slide 10: fabric Hands-On Challenge -->
-<div class="slide">
-  <h2>💻 Hands-On: Info Gathering via Fabric</h2>
-  <ol>
-    <li>Use Fabric to connect to one of your servers (e.g., the EC2 instance you set up).</li>
-    <li>Run a command like <code>uname -a</code> (to get system info) using <code>conn.run</code>.</li>
-    <li>Observe the output (it should show your remote server's OS details in your console).</li>
-  </ol>
-  <div class="interactive-element">Give it a try! Fabric will print the output from the remote server.</div>
-  <div class="instructor-note">
-    This quick test helps ensure everyone can use Fabric with their server. After <code>conn.run("uname -a")</code>, they should see the kernel/OS info from the remote machine. If time permits, encourage trying another command (like <code>uptime</code> or <code>ls /etc</code>). Note: Fabric's <code>Connection.run</code> returns a result object; by default it prints stdout, but you can capture it via <code>result = conn.run(..., hide=True)</code> and then use <code>result.stdout</code> in code.
-  </div>
-</div>
-<!-- Slide 11: File Watchers + S3 -->
-<div class="slide">
-  <h2>👀 File Watchers + Auto-Backup to S3</h2>
-  <p>We can automate reactions to file changes using <code>watchdog</code> (to monitor filesystem events) and <code>boto3</code> (to interact with AWS S3).</p>
-  <div class="interactive-element">Discussion: Why monitor files? (Imagine auto-backups for logs, syncing config changes, or triggering CI when new files appear.)</div>
-  <div class="instructor-note">
-    Explain common use cases: e.g., automatically uploading new log files for backup, watching a folder for config changes to restart a service, or triggering a build when a file is dropped in a directory. In DevOps, this pattern reduces manual checks and ensures immediate responses to changes.
-  </div>
-</div>
-<!-- Slide 12: watchdog Code Example -->
-<div class="slide">
-  <h3>Example: Auto Upload to S3 on New File</h3>
-  <div class="code-block">
-import boto3, time, os
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
-
-s3 = boto3.client('s3')      # AWS credentials should be configured (env/profile)
-BUCKET_NAME = "my-demo-bucket"
-WATCH_FOLDER = "/path/to/watch"
-
-class UploadOnChange(FileSystemEventHandler):
-    def on_created(self, event):
-        if not event.is_directory:
-            filename = os.path.basename(event.src_path)
-            s3.upload_file(event.src_path, BUCKET_NAME, filename)
-            print(f"Uploaded {filename} to S3!")
-
-observer = Observer()
-observer.schedule(UploadOnChange(), WATCH_FOLDER, recursive=False)
-observer.start()
-print(f"Watching {WATCH_FOLDER} ...")
-
-try:
-    while True:
-        time.sleep(1)
-except KeyboardInterrupt:
-    observer.stop()
-observer.join()
-  </div>
-  <div class="instructor-note">
-    This script watches a folder and uploads any new file to an S3 bucket:contentReference[oaicite:16]{index=16}. 
-    Walk through it: we subclass <code>FileSystemEventHandler</code> and override <code>on_created</code>. When a new file is detected, we use <code>boto3</code> to upload it to <code>BUCKET_NAME</code>. The observer monitors the directory in a background thread. 
-    Note: Ensure students have AWS creds set (perhaps from our earlier AWS session). In real scenarios, you'd also handle file modifications or deletions, and include error handling (e.g., wrap <code>upload_file</code> in try/except). To stop the script, they press Ctrl+C (which triggers the KeyboardInterrupt and stops the observer).
-  </div>
-</div>
-<!-- Slide 13: Case Study Example -->
-<div class="slide">
-  <h2>📝 Case Study: Automated Backups in Action</h2>
-  <ul>
-    <li><strong>Problem:</strong> Team manually uploaded nightly reports to S3 – time-consuming and prone to errors.</li>
-    <li><strong>Solution:</strong> A Python watchdog script now automatically uploads each new report file to S3 (with logging and alerts on failure).</li>
-    <li><strong>Result:</strong> Saved ~3 hours per day and eliminated missed uploads:contentReference[oaicite:17]{index=17}.</li>
-  </ul>
-  <div class="instructor-note">
-    Real-world context: Describe how a company had a tedious manual process (e.g., uploading CSV reports every night) that got automated with a simple script like the one we wrote. Emphasize the tangible benefits: time saved and more reliable operations. This is a great example of DevOps automation making life easier!
-  </div>
-</div>
-<!-- Slide 14: Knowledge Check Quiz -->
-<div class="slide">
-  <h2>Knowledge Check: Python Automation</h2>
-  <div class="quiz-question">
-    <strong>Q1: Which library is used for making HTTP API calls in our scripts?</strong>
-    <div class="quiz-options">
-      <div class="quiz-option">requests</div>
-      <div class="quiz-option">fabric</div>
-      <div class="quiz-option">watchdog</div>
-      <div class="quiz-option">paramiko</div>
-    </div>
-  </div>
-  <div class="quiz-question">
-    <strong>Q2: True or False – Fabric requires you to manually SSH into each server to run commands.</strong>
-    <div class="quiz-options">
-      <div class="quiz-option">True</div>
-      <div class="quiz-option">False</div>
-    </div>
-  </div>
-  <div class="quiz-question">
-    <strong>Q3: Which event did our watchdog handler use to know when to upload a file?</strong>
-    <div class="quiz-options">
-      <div class="quiz-option">on_startup</div>
-      <div class="quiz-option">on_modified</div>
-      <div class="quiz-option">on_created</div>
-      <div class="quiz-option">on_deleted</div>
-    </div>
-  </div>
-  <div class="instructor-note">
-    **Answers:** Q1 – requests. Q2 – False (Fabric uses SSH under the hood, so you script the commands; no manual login needed for each server). Q3 – <code>on_created</code> event triggers the upload. 
-    Use this quiz to recap: we know which lib does what, that Fabric automates SSH tasks, and how watchdog works. Discuss any misunderstandings revealed by answers.
-  </div>
-</div>
-<!-- Slide 15: Recap of Accomplishments -->
-<div class="slide">
-  <h2>What We Accomplished Today! 🎉</h2>
-  <div style="background:linear-gradient(135deg,#28a745,#20c997); color:white; padding:25px; border-radius:15px; margin:20px 0;">
-    <ul>
-      <li>Understood why Python is a go-to language for DevOps automation</li>
-      <li>Made robust API calls with <code>requests</code> (with timeouts &amp; error handling)</li>
-      <li>Automated remote server tasks using <code>fabric</code> (SSH in code)</li>
-      <li>Set up a file watcher to auto-upload files to S3 (using <code>watchdog</code> + <code>boto3</code>)</li>
-    </ul>
-  </div>
-  <div class="interactive-element">
-    Awesome work – you've turned tedious tasks into efficient Python scripts! 🚀
-  </div>
-  <div class="instructor-note">
-    Summarize each key learning: Instead of using curl, we used Python for API calls (and did it the *right* way); instead of manual SSH loops, we used Fabric to do it in one go; instead of manually checking and uploading files, we let the computer watch and upload for us. This is DevOps in action – automating repetitive work. Give kudos to the students!
-  </div>
-</div>
-<!-- Slide 16: Best Practices & Next Steps -->
-<div class="slide">
-  <h2>✅ Best Practices &amp; Next Steps</h2>
-  <ul>
-    <li><strong>Error Handling &amp; Logging:</strong> Treat automation scripts like production code – handle exceptions, log important events, and alert on failures.</li>
-    <li><strong>Secure Credentials:</strong> Never hard-code secrets (use environment vars or secret managers):contentReference[oaicite:18]{index=18}.</li>
-    <li><strong>Reuse &amp; Collaborate:</strong> Turn repetitive code into functions or modules, and share utilities across your team to avoid reinventing the wheel.</li>
-    <li><strong>Keep Learning:</strong> Explore more Python DevOps tools (e.g., <code>paramiko</code> for SSH, <code>pytest</code> for testing scripts, cloud SDKs, etc.) and keep refining your scripts.</li>
-  </ul>
-  <div class="instructor-note">
-    Some guidance moving forward: emphasize writing clean, maintainable scripts (with comments and error handling) – these might live in repos just like app code. Security is vital: e.g., use AWS IAM roles or vault for credentials, not plaintext in code:contentReference[oaicite:19]{index=19}. Encourage them to continue learning; Python has libraries for almost everything (container orchestration, cloud APIs, etc.), and strong testing tools (so you can test your automation code). The journey doesn't stop here!
-  </div>
-</div>
-<!-- Slide 17: Resources -->
-<div class="slide">
-  <h2>Resources for Continued Learning</h2>
-  <ul>
-    <li><a href="https://requests.readthedocs.io/en/latest/">Requests Documentation</a> – Official docs for the <code>requests</code> HTTP library.</li>
-    <li><a href="https://docs.fabfile.org/en/stable/">Fabric Documentation</a> – Official guide for using Fabric to automate remote tasks.</li>
-    <li><a href="https://python-watchdog.readthedocs.io/en/latest/">watchdog Documentation</a> – Documentation for the watchdog file system monitoring library.</li>
-    <li><a href="https://automatetheboringstuff.com/">Automate the Boring Stuff with Python</a> – Free online book for learning Python automation fundamentals.</li>
-  </ul>
-  <div class="instructor-note">
-    Point out these resources: official docs are the best place to deep-dive into each library's features. "Automate the Boring Stuff" is highly recommended if they want more practice automating everyday tasks with Python. Also suggest they try small projects: e.g., use requests to pull data from an API of interest, or use Fabric to write a mini-deployment script for a personal project.
-  </div>
-</div>
-</div>
-<div class="slide-counter"><span id="current-slide">1</span>/<span id="total-slides"></span></div>
-<div class="navigation">
-  <button class="nav-btn" onclick="previousSlide()">← Previous</button>
-  <button class="nav-btn" onclick="nextSlide()">Next →</button>
-  <button class="nav-btn" onclick="toggleInstructorNotes()" style="background:linear-gradient(135deg,#3498db,#2980b9);">📝 Notes</button>
-</div>
-<script>
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
-        const totalSlides = slides.length;
-        let instructorNotesVisible = false;
-        
-        document.getElementById('total-slides').textContent = totalSlides;
-
-        function showSlide(n) {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (n + totalSlides) % totalSlides;
-            slides[currentSlide].classList.add('active');
-            document.getElementById('current-slide').textContent = currentSlide + 1;
-        }
-
-        function nextSlide() {
-            showSlide(currentSlide + 1);
-        }
-
-        function previousSlide() {
-            showSlide(currentSlide - 1);
-        }
-
-        function toggleInstructorNotes() {
-            instructorNotesVisible = !instructorNotesVisible;
-            document.querySelectorAll('.instructor-note').forEach(note => {
-                note.style.display = instructorNotesVisible ? 'block' : 'none';
-            });
-        }
-
-        // Keyboard navigation
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowRight' || e.key === ' ') {
-                nextSlide();
-            } else if (e.key === 'ArrowLeft') {
-                previousSlide();
-            } else if (e.key === 'n' || e.key === 'N') {
-                toggleInstructorNotes();
-            }
-        });
-
-        // Quiz option selection highlight
-        document.querySelectorAll('.quiz-option').forEach(option => {
-            option.addEventListener('click', function() {
-                this.parentNode.querySelectorAll('.quiz-option').forEach(opt => {
-                    opt.style.background = 'rgba(255,255,255,0.92)';
-                    opt.style.color = '#333';
-                });
-                this.style.background = '#3498db';
-                this.style.color = '#fff';
-            });
-        });
-
-        // Hide instructor notes by default on load
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.instructor-note').forEach(note => {
-                note.style.display = 'none';
-            });
-        });
-</script>
-</body>
-</html>
-
+<div class="reveal"><div class="slides">
+<section><h1>Top Python Libraries for Automation &amp; DevOps</h1><p>What · Why · How (with examples)</p></section>
+<section><h2>Agenda</h2><ul><li>boto3, paramiko, docker, kubernetes</li><li>pyyaml, requests, fabric</li><li>pytest, ansible-runner, sys</li></ul></section>
+<section><h2>boto3 — AWS SDK</h2><pre><code class="language-python">import boto3
+s3 = boto3.client("s3")
+print([b["Name"] for b in s3.list_buckets().get("Buckets", [])])</code></pre></section>
+<section><h2>paramiko — SSH</h2><pre><code class="language-python">import paramiko
+ssh = paramiko.SSHClient(); ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect("1.2.3.4", username="ec2-user", key_filename="~/.ssh/key.pem")
+print(ssh.exec_command("hostname")[1].read().decode()); ssh.close()</code></pre></section>
+<section><h2>docker SDK — Containers</h2><pre><code class="language-python">import docker
+cli = docker.from_env()
+print(cli.containers.run("nginx:latest", detach=True).short_id)</code></pre></section>
+<section><h2>kubernetes — K8s API</h2><pre><code class="language-python">from kubernetes import client, config
+config.load_kube_config(); v1 = client.CoreV1Api()
+v1.delete_namespaced_pod(name="example-pod", namespace="default")</code></pre></section>
+<section><h2>pyyaml — YAML</h2><pre><code class="language-python">import yaml
+data = yaml.safe_load(open("deployment.yaml"))
+data["spec"]["replicas"] = 5
+yaml.safe_dump(data, open("deployment.yaml","w"))</code></pre></section>
+<section><h2>requests — HTTP APIs</h2><pre><code class="language-python">import requests, os
+requests.post(os.environ["SLACK_WEBHOOK"], json={"text":"Deploy OK"}, timeout=8).raise_for_status()</code></pre></section>
+<section><h2>fabric — SSH tasks</h2><pre><code class="language-python">from fabric import Connection
+c = Connection("ubuntu@myserver.com")
+c.run("cd /srv/app && git pull && docker compose up -d")</code></pre></section>
+<section><h2>pytest — tests</h2><pre><code class="language-python">import requests
+def test_homepage():
+    assert requests.get("http://localhost:8000").status_code == 200</code></pre></section>
+<section><h2>ansible-runner — run playbooks</h2><pre><code class="language-python">import ansible_runner
+r = ansible_runner.run(private_data_dir="/ansible", playbook="deploy.yml")
+print(r.status, r.rc)</code></pre></section>
+<section><h2>sys — CLI plumbing</h2><pre><code class="language-python">import sys
+if len(sys.argv) != 2: print("Usage: deploy.py <env>"); sys.exit(1)</code></pre></section>
+<section><h2>Q&amp;A</h2></section>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/highlight/highlight.js"></script>
+<script>Reveal.initialize({hash:true, slideNumber:true, plugins:[RevealHighlight]});</script>
+</body></html>

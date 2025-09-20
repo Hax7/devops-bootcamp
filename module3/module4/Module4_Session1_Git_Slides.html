@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DevOps Bootcamp — Module 4 / Session 1: Git & GitHub</title>
+  <style>
+    :root{
+      --bg:#0f172a;           /* slate-900 */
+      --panel:#111827ee;      /* gray-900 */
+      --text:#e5e7eb;         /* gray-200 */
+      --muted:#94a3b8;        /* slate-400 */
+      --accent:#22d3ee;       /* cyan-400 */
+      --accent-2:#a78bfa;     /* violet-400 */
+      --green:#34d399;        /* emerald-400 */
+      --red:#f87171;          /* red-400 */
+      --yellow:#facc15;       /* amber-400 */
+      --shadow:0 20px 60px rgba(0,0,0,.35), 0 12px 28px rgba(0,0,0,.25);
+      --radius:24px;
+    }
+    html,body{height:100%; margin:0; background: radial-gradient(1200px 800px at 70% -10%, #1f2937 0%, #0b1224 45%, var(--bg) 60%); color:var(--text); font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";}
+    .app{height:100%; display:flex; flex-direction:column;}
+    header{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 16px; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 60%);
+      position:relative; z-index:3;
+    }
+    .brand{display:flex; align-items:center; gap:12px; font-weight:800; letter-spacing:.5px;}
+    .brand .dot{width:12px; height:12px; border-radius:12px; background:conic-gradient(from 0deg, var(--accent), var(--accent-2)); box-shadow:0 0 20px var(--accent);}
+    .toolbar{display:flex; align-items:center; gap:8px; opacity:.9; font-size:14px; flex-wrap:wrap;}
+    .toolbar button, .toolbar .btn{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.2));
+      border:1px solid rgba(255,255,255,.08);
+      color:var(--text);
+      padding:8px 12px; border-radius:10px; cursor:pointer;
+      transition: transform .08s ease, background .2s ease, box-shadow .2s ease;
+      box-shadow: var(--shadow);
+    }
+    .toolbar button:hover{ transform: translateY(-1px) scale(1.01); }
+    .toolbar .btn.small{ padding:6px 10px; font-size:13px; }
+    .progress{
+      height:6px; border-radius:999px; background:rgba(255,255,255,.08); width:260px; overflow:hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+    }
+    .progress .bar{height:100%; width:0%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .3s ease;}
+    .slides{ flex:1; position:relative; overflow:hidden; }
+    .slide{
+      position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; align-items:center;
+      padding:48px 8vw; gap:18px; opacity:0; transform: translateX(40px) scale(.98); pointer-events:none;
+      transition: opacity .45s cubic-bezier(.2,.9,.2,1), transform .45s cubic-bezier(.2,.9,.2,1);
+    }
+    .slide.active{ opacity:1; transform: translateX(0) scale(1); pointer-events:auto; }
+    .card{
+      width:min(1200px, 92vw);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.25));
+      border:1px solid rgba(255,255,255,.08); border-radius: var(--radius);
+      padding: clamp(20px, 3.6vw, 36px);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+    h1{ font-size: clamp(28px, 4vw, 52px); margin:0 0 4px 0; line-height:1.1; letter-spacing:.2px;}
+    h2{ font-size: clamp(22px, 3.2vw, 36px); margin:0; line-height:1.2; }
+    p{ margin:0; font-size: clamp(16px, 2vw, 20px); color:var(--muted); }
+    ul{ margin:12px 0 0 18px; font-size: clamp(16px, 2vw, 20px); color:var(--text); }
+    li{ margin:6px 0; }
+    .meta{ font-size:14px; color:var(--muted); letter-spacing:.3px;}
+    .row{ display:grid; grid-template-columns: repeat(12,1fr); gap:16px; align-items:stretch; }
+    .col-12{ grid-column: span 12; }
+    .col-6{ grid-column: span 6; }
+    .col-4{ grid-column: span 4; }
+    .pill{ display:inline-flex; gap:10px; align-items:center; padding:8px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.05); font-size:14px; color:var(--text); }
+    .badge{ display:inline-block; padding:6px 10px; border-radius: 999px; background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.08); font-size:12px; margin-left:8px;}
+    .kbd{ padding:2px 6px; border-radius:6px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace; font-size: .95em;}
+    .muted{ color: var(--muted); }
+    .note{ font-size:14px; color:var(--muted); }
+    .center{ text-align:center; }
+    .right{ text-align:right; }
+    .grid-2{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+    .grid-3{ display:grid; grid-template-columns: repeat(3,1fr); gap:16px; }
+    .callout{ border-left: 6px solid var(--accent); padding-left:12px; }
+    .cta{ display:flex; gap:12px; flex-wrap:wrap; }
+    /* fragments */
+    .fragment{ opacity:0; transform: translateY(10px) scale(.98); transition: opacity .35s, transform .35s; }
+    .fragment.revealed{ opacity:1; transform: translateY(0) scale(1); }
+    /* terminal */
+    .terminal{
+      background: #0b0f1d; border:1px solid rgba(255,255,255,.12); border-radius:16px; overflow:hidden; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      box-shadow: var(--shadow);
+    }
+    .terminal .titlebar{ display:flex; align-items:center; gap:8px; padding:10px 12px; background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.3)); }
+    .dot{ width:10px; height:10px; border-radius:999px; }
+    .dot.red{ background:#ff5f56; } .dot.yellow{ background:#ffbd2e; } .dot.green{ background:#27c93f; }
+    .terminal .body{ padding:14px 16px; min-height:180px; }
+    .prompt{ color:#7dd3fc; }
+    .out{ color:#cbd5e1; }
+    .cmd{ color:#22d3ee; }
+    .caret{ display:inline-block; width:8px; background:#22d3ee; height:1em; vertical-align:-2px; animation: blink 1s steps(1,end) infinite; }
+    @keyframes blink { 0%, 49% { opacity:1; } 50%, 100% { opacity:0; } }
+    .btn{
+      display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.3));
+      cursor:pointer; user-select:none; transition: transform .08s ease;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn .small{ font-size:12px; opacity:.8; }
+    /* quiz */
+    .quiz{ background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.25)); border:1px solid rgba(255,255,255,.1); border-radius:16px; padding:16px; }
+    .quiz .q{ font-weight:700; margin-bottom:10px; }
+    .quiz .choices{ display:grid; gap:10px; }
+    .quiz .choice{
+      padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04);
+      cursor:pointer; transition: transform .06s ease, background .2s ease, border .2s ease;
+    }
+    .quiz .choice:hover{ transform: translateY(-1px); }
+    .quiz .choice.correct{ background: rgba(16,185,129,.25); border-color: rgba(16,185,129,.5); }
+    .quiz .choice.wrong{ background: rgba(239,68,68,.25); border-color: rgba(239,68,68,.5); }
+    .quiz .explain{ margin-top:10px; font-size:14px; color:var(--muted); }
+    /* graph */
+    .graph{ width:100%; height:280px; border-radius:16px; border:1px solid rgba(255,255,255,.1); background: radial-gradient(900px 400px at 10% -20%, rgba(34,211,238,.15), transparent 50%); overflow:hidden; position:relative;}
+    .node{ position:absolute; width:14px; height:14px; border-radius:999px; background: var(--accent); box-shadow:0 0 0 4px rgba(34,211,238,.15), 0 0 14px rgba(34,211,238,.6); transform: translate(-7px, -7px);}
+    .node.alt{ background: var(--accent-2); box-shadow:0 0 0 4px rgba(167,139,250,.15), 0 0 14px rgba(167,139,250,.6); }
+    .edge{ position:absolute; height:2px; background: linear-gradient(90deg, rgba(255,255,255,.2), rgba(255,255,255,0)); transform-origin:left; }
+    .legend{ font-size:14px; color:var(--muted); display:flex; gap:12px; align-items:center; margin-top:8px;}
+    .legend .swatch{ width:10px; height:10px; border-radius:999px; display:inline-block; }
+    footer{
+      display:flex; align-items:center; justify-content:space-between; padding:8px 16px; font-size:12px; color:var(--muted);
+      background: linear-gradient(0deg, rgba(255,255,255,.04), rgba(255,255,255,0) 60%);
+    }
+    a{ color: var(--accent); text-decoration: none; }
+    .small{ font-size: .92em; }
+    /* print support */
+    @media print{
+      body{ background:white; color:black; }
+      .slide{ position:relative; page-break-after:always; opacity:1 !important; transform:none !important;}
+      header, footer{ display:none; }
+      .card{ box-shadow:none; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="dot"></div>
+      <div>DevOps Bootcamp — Module 4 · Session 1: <span style="color:var(--accent)">Git & GitHub</span></div>
+      <span class="badge">3 hours</span>
+      <span class="badge">Beginner → Intermediate</span>
+    </div>
+    <div class="toolbar">
+      <button onclick="prevSlide()" title="Previous (←)">◀ Prev</button>
+      <button onclick="nextSlide()" title="Next (Space/→)">Next ▶</button>
+      <div class="progress"><div class="bar" id="progressBar"></div></div>
+      <div class="btn small" onclick="toggleHelp()">❓ Shortcuts</div>
+      <div class="btn small" id="toggleAutoReveal" onclick="toggleAutoReveal()">↩ Auto‑reveal on back: <strong>On</strong></div>
+    </div>
+  </header>
+  <div class="slides" id="slides">
+    <!-- Slide 1 -->
+    <section class="slide active" data-title="Welcome">
+      <div class="card center">
+        <h1>Welcome to <span style="color:var(--accent)">Git</span> & <span style="color:var(--accent-2)">GitHub</span> 🎉</h1>
+        <p class="muted">Version Control & Team Collaboration — DevOps Bootcamp · Module 4 (Session 1/3)</p>
+        <div class="grid-2" style="margin-top:18px;">
+          <div class="pill">Goal: Be comfortable with Git basics, branching, merging, GitHub PRs</div>
+          <div class="pill">Format: lecture + mini-demos + quick quizzes</div>
+        </div>
+        <div class="note" style="margin-top:10px;">Tip: Use <span class="kbd">Space</span> or <span class="kbd">→</span> to advance, <span class="kbd">←</span> to go back. Click items to reveal fragments.</div>
+      </div>
+    </section>
+
+    <!-- Agenda -->
+    <section class="slide" data-title="Agenda">
+      <div class="card">
+        <h2>Agenda (3 hours)</h2>
+        <ul>
+          <li class="fragment">Why version control? DVCS vs. centralized</li>
+          <li class="fragment">Git basics: init · clone · add · commit · status · log</li>
+          <li class="fragment">Branching & merging · rebase vs merge · conflicts</li>
+          <li class="fragment">GitHub: repos, forks, pull requests (code review)</li>
+          <li class="fragment">Workflows: Git Flow · GitHub Flow · Trunk-Based</li>
+          <li class="fragment">Best practices: commit messages · .gitignore</li>
+          <li class="fragment">Mini labs + quick quizzes ✅</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Version Control Basics -->
+    <section class="slide" data-title="Version Control">
+      <div class="card">
+        <h2>Version Control — the “undo button” for projects</h2>
+        <div class="row">
+          <div class="col-6">
+            <ul>
+              <li class="fragment">Track changes to files over time</li>
+              <li class="fragment">Collaborate without overwriting each other</li>
+              <li class="fragment">Revert to earlier states when things break</li>
+              <li class="fragment">See who changed what, when, and why</li>
+            </ul>
+          </div>
+          <div class="col-6">
+            <div class="terminal">
+              <div class="titlebar"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span> <span class="muted">demo@slides:~</span></div>
+              <div class="body" data-typewriter='[
+                {"cmd":"git init my-app","out":"Initialized empty Git repository in ./my-app/.git"},
+                {"cmd":"cd my-app && echo Hello > hello.txt && git add hello.txt && git commit -m \"Add hello\"","out":"[main (root-commit) abc1234] Add hello\n 1 file changed, 1 insertion(+)\n create mode 100644 hello.txt"},
+                {"cmd":"git log --oneline","out":"abc1234 (HEAD -> main) Add hello"}
+              ]'></div>
+            </div>
+            <div style="margin-top:10px;">
+              <span class="btn" onclick="playTypewriter(this)">▶ Run demo</span>
+              <span class="note">Auto-types 3 essential commands.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="DVCS vs Centralized">
+      <div class="card">
+        <h2>Centralized vs. Distributed</h2>
+        <div class="grid-2">
+          <div>
+            <h3>Centralized (CVCS)</h3>
+            <ul>
+              <li class="fragment">Single central server, thin clients</li>
+              <li class="fragment">If server is down, no commits 😬</li>
+              <li class="fragment">Examples: SVN, Perforce</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Distributed (DVCS)</h3>
+            <ul>
+              <li class="fragment">Every dev has full history locally</li>
+              <li class="fragment">Fast operations, offline commits</li>
+              <li class="fragment">Examples: <strong>Git</strong>, Mercurial</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Git Basics -->
+    <section class="slide" data-title="Git Basics">
+      <div class="card">
+        <h2>Git Basics</h2>
+        <div class="grid-2">
+          <div>
+            <ul>
+              <li class="fragment"><span class="kbd">git init</span> — start a repo</li>
+              <li class="fragment"><span class="kbd">git clone &lt;url&gt;</span> — copy a repo</li>
+              <li class="fragment"><span class="kbd">git status</span> — what changed?</li>
+              <li class="fragment"><span class="kbd">git add</span> → <span class="kbd">git commit</span> — save snapshot</li>
+              <li class="fragment"><span class="kbd">git log</span> — history</li>
+            </ul>
+          </div>
+          <div>
+            <div class="callout">
+              <p><strong>Three areas:</strong></p>
+              <ul>
+                <li>Working Directory</li>
+                <li>Staging Area (Index)</li>
+                <li>Repository (.git)</li>
+              </ul>
+              <p class="note">Think: edit → stage → commit.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Branching & Merging -->
+    <section class="slide" data-title="Branching">
+      <div class="card">
+        <h2>Branches: safe spaces for ideas 🌱</h2>
+        <div class="grid-2">
+          <div>
+            <ul>
+              <li class="fragment">Create: <span class="kbd">git branch feature-x</span></li>
+              <li class="fragment">Switch: <span class="kbd">git switch feature-x</span></li>
+              <li class="fragment">One branch per task/bug</li>
+              <li class="fragment">Merge when ready</li>
+            </ul>
+            <div style="margin-top:10px;">
+              <span class="btn" onclick="animateGraph()">▶ Animate branch → merge</span>
+            </div>
+          </div>
+          <div>
+            <div class="graph" id="graph"></div>
+            <div class="legend">
+              <span class="swatch" style="background:var(--accent);"></span><span>Main</span>
+              <span class="swatch" style="background:var(--accent-2);"></span><span>Feature</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Merge vs Rebase -->
+    <section class="slide" data-title="Merge vs Rebase">
+      <div class="card">
+        <h2>Merge vs. Rebase</h2>
+        <div class="grid-2">
+          <div>
+            <h3>Merging</h3>
+            <ul>
+              <li class="fragment">Preserves history (adds a merge commit)</li>
+              <li class="fragment">Simple & safe for shared branches</li>
+              <li class="fragment">History shows “diamond” shape</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Rebasing</h3>
+            <ul>
+              <li class="fragment">Rewrites commits onto new base</li>
+              <li class="fragment">Linear history (clean look)</li>
+              <li class="fragment">Avoid on public/shared branches</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Merge Conflict Demo -->
+    <section class="slide" data-title="Merge Conflicts">
+      <div class="card">
+        <h2>Merge Conflicts (don’t panic 😅)</h2>
+        <div class="grid-2">
+          <div>
+            <ul>
+              <li class="fragment">Happen when the same lines changed in two branches</li>
+              <li class="fragment">Git marks conflicts with <span class="kbd">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span> and <span class="kbd">&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span></li>
+              <li class="fragment">Edit to choose/merge → <span class="kbd">git add</span> → commit</li>
+            </ul>
+            <div style="margin-top:10px" class="note">Tip: merge early, merge often to reduce conflicts.</div>
+          </div>
+          <div>
+            <div class="terminal">
+              <div class="titlebar"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span> <span class="muted">conflict-demo</span></div>
+              <div class="body small">
+<pre class="out">
+<<<<<<< HEAD
+title = "Welcome"
+=======
+title = "Hello world!"
+>>>>>>> feature/greeting
+</pre>
+              </div>
+            </div>
+            <div class="note" style="margin-top:8px;">Resolve by choosing one or combining; then <span class="kbd">git add</span> & <span class="kbd">git commit</span>.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- GitHub -->
+    <section class="slide" data-title="GitHub">
+      <div class="card">
+        <h2>GitHub: collaborate in the open 🐙</h2>
+        <ul>
+          <li class="fragment">Host repos · issues · wikis · discussions</li>
+          <li class="fragment">Fork → branch → pull request → review → merge</li>
+          <li class="fragment">Great for classroom projects & code review</li>
+        </ul>
+        <div class="grid-2" style="margin-top:12px;">
+          <div>
+            <div class="terminal">
+              <div class="titlebar"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span> <span class="muted">push-to-github</span></div>
+              <div class="body" data-typewriter='[
+                {"cmd":"git remote add origin https://github.com/you/my-app.git","out":""},
+                {"cmd":"git branch -M main","out":""},
+                {"cmd":"git push -u origin main","out":"Counting objects: 5, done.\nTo https://github.com/you/my-app.git\n * [new branch] main -> main"}
+              ]'></div>
+            </div>
+            <div style="margin-top:10px;"><span class="btn" onclick="playTypewriter(this)">▶ Push demo</span></div>
+          </div>
+          <div>
+            <div class="quiz" data-quiz>
+              <div class="q">Which GitHub action requests a change to be merged?</div>
+              <div class="choices">
+                <div class="choice" data-correct="false">Issue</div>
+                <div class="choice" data-correct="true">Pull Request</div>
+                <div class="choice" data-correct="false">Wiki</div>
+                <div class="choice" data-correct="false">Fork</div>
+              </div>
+              <div class="explain">A Pull Request (PR) proposes to merge your branch (often in your fork) into the target repository’s branch.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Workflows — Git Flow -->
+    <section class="slide" data-title="Workflows: Git Flow">
+      <div class="card">
+        <h2>Workflows — Git Flow</h2>
+        <div class="grid-3">
+          <div class="card" style="background:rgba(34,211,238,.08)">
+            <h3>Git Flow</h3>
+            <ul>
+              <li class="fragment">Main (prod), Develop (integration)</li>
+              <li class="fragment">Feature → Develop → Release → Main</li>
+              <li class="fragment">Hotfix from Main → back-merge</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3 class="note">Next up…</h3>
+            <ul class="note">
+              <li>GitHub Flow (PR-based)</li>
+              <li>Trunk-Based Development</li>
+            </ul>
+          </div>
+          <div class="card">
+            <p class="note">Advance to see each workflow.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Workflows — GitHub Flow -->
+    <section class="slide" data-title="Workflows: GitHub Flow">
+      <div class="card">
+        <h2>Workflows — GitHub Flow</h2>
+        <div class="grid-2">
+          <div class="card" style="background:rgba(167,139,250,.08)">
+            <h3>GitHub Flow</h3>
+            <ul>
+              <li class="fragment">Branch → PR → Review → Merge</li>
+              <li class="fragment">Deploy from main frequently</li>
+              <li class="fragment">Lightweight; great for CD</li>
+            </ul>
+          </div>
+          <div class="card">
+            <p class="note">No long-lived develop/release branches; rely on PR review.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Workflows — Trunk-Based -->
+    <section class="slide" data-title="Workflows: Trunk-Based">
+      <div class="card">
+        <h2>Workflows — Trunk-Based</h2>
+        <div class="grid-2">
+          <div class="card" style="background:rgba(250,204,21,.12)">
+            <h3>Trunk-Based Development</h3>
+            <ul>
+              <li class="fragment">Small, frequent commits to main</li>
+              <li class="fragment">Feature flags for unfinished work</li>
+              <li class="fragment">Keeps integration pain low</li>
+            </ul>
+          </div>
+          <div class="card">
+            <p class="note">Popular for fast-moving teams; pairs well with CI.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Monorepo & Submodules -->
+    <section class="slide" data-title="Monorepo vs Submodules">
+      <div class="card">
+        <h2>Monorepo vs Submodules</h2>
+        <div class="grid-2">
+          <div>
+            <h3>Monorepo</h3>
+            <ul>
+              <li class="fragment">One repo, many projects (folders)</li>
+              <li class="fragment">Simple cloning & atomic changes</li>
+              <li class="fragment">Great for tightly-coupled components</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Submodules</h3>
+            <ul>
+              <li class="fragment">Repo inside repo (pinned commit)</li>
+              <li class="fragment">Reusable shared components</li>
+              <li class="fragment">Added complexity (init/update)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Best Practices -->
+    <section class="slide" data-title="Best Practices">
+      <div class="card">
+        <h2>Best Practices</h2>
+        <ul>
+          <li class="fragment">Write clear commit messages (imperative mood)</li>
+          <li class="fragment">Small, focused commits</li>
+          <li class="fragment">PRs for review; squash or rebase as needed</li>
+          <li class="fragment">Use <span class="kbd">.gitignore</span> to avoid junk/secrets</li>
+          <li class="fragment">Don’t rebase shared public history</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- .gitignore -->
+    <section class="slide" data-title=".gitignore">
+      <div class="card">
+        <h2><span class="kbd">.gitignore</span> essentials</h2>
+<pre class="card small">
+# Dependencies / build
+node_modules/
+dist/
+
+# Environment vars
+.env
+
+# OS / editor
+.DS_Store
+*.swp
+</pre>
+        <div class="note">Tip: check <span class="kbd">git status</span> before committing to avoid surprises.</div>
+      </div>
+    </section>
+
+    <!-- Mini Labs -->
+    <section class="slide" data-title="Mini Lab 1">
+      <div class="card">
+        <h2>Mini Lab 1 — Your first repo</h2>
+        <ol>
+          <li class="fragment">Create a folder <span class="kbd">my-first-git</span></li>
+          <li class="fragment"><span class="kbd">git init</span>, make <span class="kbd">hello.txt</span></li>
+          <li class="fragment"><span class="kbd">git add</span> + <span class="kbd">git commit -m "Add hello"</span></li>
+          <li class="fragment"><span class="kbd">git log</span> & <span class="kbd">git status</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Mini Lab 2">
+      <div class="card">
+        <h2>Mini Lab 2 — Branch & merge</h2>
+        <ol>
+          <li class="fragment"><span class="kbd">git switch -c cool-feature</span></li>
+          <li class="fragment">Edit a line → commit</li>
+          <li class="fragment">Switch back to <span class="kbd">main</span> & change same line</li>
+          <li class="fragment"><span class="kbd">git merge cool-feature</span> → resolve conflict → commit</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Mini Lab 3">
+      <div class="card">
+        <h2>Mini Lab 3 — GitHub PR</h2>
+        <ol>
+          <li class="fragment">Fork classroom repo → clone</li>
+          <li class="fragment">Create branch → add your name → commit</li>
+          <li class="fragment">Push & open Pull Request</li>
+          <li class="fragment">Review a classmate’s PR (leave one comment)</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Quick Quizzes -->
+    <section class="slide" data-title="Quiz 1">
+      <div class="card">
+        <div class="quiz" data-quiz>
+          <div class="q">Which command stages files for the next commit?</div>
+          <div class="choices">
+            <div class="choice" data-correct="true">git add</div>
+            <div class="choice" data-correct="false">git commit</div>
+            <div class="choice" data-correct="false">git clone</div>
+            <div class="choice" data-correct="false">git log</div>
+          </div>
+          <div class="explain">Use <span class="kbd">git add</span> to move changes into the staging area (index); then commit.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Quiz 2">
+      <div class="card">
+        <div class="quiz" data-quiz>
+          <div class="q">True or False: Rebasing is safe on public shared branches.</div>
+          <div class="choices">
+            <div class="choice" data-correct="false">True</div>
+            <div class="choice" data-correct="true">False</div>
+          </div>
+          <div class="explain">Avoid rebasing public history — it rewrites commits and can confuse collaborators.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Wrap Up -->
+    <section class="slide" data-title="Wrap Up">
+      <div class="card center">
+        <h2>Wrap-up ✨</h2>
+        <p class="fragment">You can: initialize repos, commit, branch, merge, resolve conflicts.</p>
+        <p class="fragment">You know: GitHub PRs, basic workflows, best practices.</p>
+        <div class="cta" style="justify-content:center; margin-top:14px;">
+          <div class="btn" onclick="location.reload()">↻ Restart slides</div>
+          <div class="btn" onclick="toggleHelp()">⌨ Shortcuts</div>
+          <div class="btn" onclick="alert('Tip: Press P to print/save as PDF')">🖨 Export tips</div>
+        </div>
+        <div class="note" style="margin-top:12px;">Next sessions: GitOps with ArgoCD & Flux.</div>
+      </div>
+    </section>
+
+    <!-- Help -->
+    <section class="slide" data-title="Shortcuts" id="helpSlide">
+      <div class="card">
+        <h2>Keyboard shortcuts</h2>
+        <ul>
+          <li><span class="kbd">Space</span> / <span class="kbd">→</span>: next fragment/slide</li>
+          <li><span class="kbd">←</span>: previous fragment/slide</li>
+          <li><span class="kbd">H</span>: toggle this help</li>
+          <li><span class="kbd">P</span>: print / save as PDF</li>
+        </ul>
+        <div class="note">Runs 100% offline in your browser. No internet required.</div>
+      </div>
+    </section>
+  </div>
+  <footer>
+    <div>© DevOps Bootcamp — Module 4 · Git | Built for browser-presenting over Zoom</div>
+    <div>Use <span class="kbd">H</span> for help · <span class="kbd">P</span> to print</div>
+  </footer>
+</div>
+
+<script>
+  // --- Slide/fragment engine with auto-reveal-on-back ---
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let index = 0;
+  let fragmentIndex = 0;
+  let helpVisible = false;
+  let autoRevealBack = true; // new behavior
+  const toggleBtn = document.getElementById('toggleAutoReveal');
+
+  function setActive(i, dir=0){
+    slides.forEach((s, idx)=>{
+      s.classList.toggle('active', idx===i);
+      // reset fragments on non-active slides
+      if(idx!==i){ Array.from(s.querySelectorAll('.fragment')).forEach(f=>f.classList.remove('revealed')); }
+    });
+    index = i;
+    // when going back (dir < 0) and autoRevealBack is on: reveal all fragments of this slide
+    const frags = Array.from(slides[index].querySelectorAll('.fragment'));
+    if(dir < 0 && autoRevealBack){
+      frags.forEach(f=>f.classList.add('revealed'));
+      fragmentIndex = frags.length;
+    } else {
+      fragmentIndex = 0;
+    }
+    updateProgress();
+  }
+
+  function revealNextFragmentOrSlide(){
+    const frags = Array.from(slides[index].querySelectorAll('.fragment'));
+    if(fragmentIndex < frags.length){
+      frags[fragmentIndex].classList.add('revealed');
+      fragmentIndex++;
+    } else {
+      nextSlide();
+    }
+  }
+
+  function hidePrevFragmentOrSlide(){
+    const frags = Array.from(slides[index].querySelectorAll('.fragment'));
+    if(fragmentIndex > 0){
+      fragmentIndex--;
+      frags[fragmentIndex].classList.remove('revealed');
+    } else {
+      prevSlide();
+    }
+  }
+
+  function nextSlide(){
+    if(index < slides.length-1){ setActive(index+1, +1); }
+  }
+  function prevSlide(){
+    if(index > 0){ setActive(index-1, -1); }
+  }
+  function updateProgress(){
+    const bar = document.getElementById('progressBar');
+    const pct = ((index+1)/slides.length)*100;
+    bar.style.width = pct + '%';
+  }
+
+  // keyboard controls
+  window.addEventListener('keydown', (e)=>{
+    if(e.key==='ArrowRight' || e.key===' '){ e.preventDefault(); revealNextFragmentOrSlide(); }
+    if(e.key==='ArrowLeft'){ e.preventDefault(); hidePrevFragmentOrSlide(); }
+    if(e.key.toLowerCase()==='h'){ toggleHelp(); }
+    if(e.key.toLowerCase()==='p'){ window.print(); }
+  });
+
+  // clicking body advances fragments
+  document.getElementById('slides').addEventListener('click', (e)=>{
+    const interactive = e.target.closest('.btn,.choice,.terminal,.quiz,.card pre');
+    if(!interactive){ revealNextFragmentOrSlide(); }
+  });
+
+  // --- Help toggle ---
+  function toggleHelp(){
+    const help = document.getElementById('helpSlide');
+    helpVisible = !helpVisible;
+    if(helpVisible){
+      setActive(slides.indexOf(help), +1);
+    } else {
+      setActive(0, -1);
+    }
+  }
+
+  // --- Toggle auto reveal button ---
+  function toggleAutoReveal(){
+    autoRevealBack = !autoRevealBack;
+    toggleBtn.innerHTML = '↩ Auto‑reveal on back: <strong>' + (autoRevealBack ? 'On' : 'Off') + '</strong>';
+  }
+
+  // --- Typewriter terminal demo ---
+  function typeLine(el, text, speed=18){
+    return new Promise(resolve=>{
+      let i=0;
+      const span = document.createElement('span');
+      el.appendChild(span);
+      const timer = setInterval(()=>{
+        span.textContent = text.slice(0, ++i);
+        if(i>=text.length){ clearInterval(timer); resolve(); }
+      }, speed);
+    });
+  }
+  async function playTypewriter(triggerBtn){
+    const body = triggerBtn.closest('.card, .slide').querySelector('.terminal .body');
+    if(!body) return;
+    body.innerHTML = '';
+    const script = JSON.parse(body.getAttribute('data-typewriter')||'[]');
+    for(const step of script){
+      const line = document.createElement('div');
+      line.className = 'line';
+      line.innerHTML = '<span class="prompt">$</span> <span class="cmd"></span><span class="caret"></span>';
+      body.appendChild(line);
+      const cmdSpan = line.querySelector('.cmd');
+      await typeLine(cmdSpan, ' ' + step.cmd);
+      line.querySelector('.caret').remove();
+      if(step.out){
+        const pre = document.createElement('pre');
+        pre.className = 'out';
+        pre.textContent = step.out;
+        body.appendChild(pre);
+      }
+    }
+  }
+
+  // --- Simple commit graph animation ---
+  function placeNode(parent, x, y, alt=false){
+    const n = document.createElement('div');
+    n.className = 'node' + (alt?' alt':'');
+    n.style.left = x+'px'; n.style.top = y+'px';
+    parent.appendChild(n);
+    return n;
+  }
+  function placeEdge(parent, x, y, w, rot){
+    const e = document.createElement('div');
+    e.className = 'edge';
+    e.style.left = x+'px'; e.style.top = y+'px';
+    e.style.width = w+'px'; e.style.transform = 'rotate('+rot+'deg)';
+    parent.appendChild(e);
+    return e;
+  }
+  function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+  async function animateGraph(){
+    const g = document.getElementById('graph');
+    g.innerHTML = '';
+    // main line nodes
+    const baseX=40, baseY=180, step=120;
+    placeNode(g, baseX, baseY);
+    placeNode(g, baseX+step, baseY);
+    placeEdge(g, baseX, baseY, step, 0);
+    await sleep(300);
+    placeNode(g, baseX+step*2, baseY);
+    placeEdge(g, baseX+step, baseY, step, 0);
+    await sleep(300);
+    // branch off
+    placeNode(g, baseX+step*2, baseY-90, true);
+    placeEdge(g, baseX+step*2, baseY, 95, -65);
+    await sleep(300);
+    placeNode(g, baseX+step*3, baseY-90, true);
+    placeEdge(g, baseX+step*2, baseY-90, step, 0);
+    await sleep(300);
+    // meanwhile main progresses
+    placeNode(g, baseX+step*3, baseY);
+    placeEdge(g, baseX+step*2, baseY, step, 0);
+    await sleep(300);
+    // merge branch back
+    placeNode(g, baseX+step*4, baseY);
+    placeEdge(g, baseX+step*3, baseY, step, 0);
+    placeEdge(g, baseX+step*3, baseY-90, 130, 25); // merge line
+  }
+
+  // --- Quizzes ---
+  document.querySelectorAll('[data-quiz]').forEach(qz=>{
+    qz.querySelectorAll('.choice').forEach(choice=>{
+      choice.addEventListener('click', ()=>{
+        const correct = choice.getAttribute('data-correct')==='true';
+        // lock all
+        qz.querySelectorAll('.choice').forEach(c=>c.style.pointerEvents='none');
+        if(correct){ choice.classList.add('correct'); }
+        else{ choice.classList.add('wrong'); qz.querySelectorAll('.choice[data-correct="true"]').forEach(c=>c.classList.add('correct')); }
+      });
+    });
+  });
+
+  // Ensure first slide progress is correct
+  updateProgress();
+</script>
+</body>
+</html>
